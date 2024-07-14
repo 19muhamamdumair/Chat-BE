@@ -1,3 +1,5 @@
+# therapist_chat/wsgi.py
+
 """
 WSGI config for therapist_chat project.
 

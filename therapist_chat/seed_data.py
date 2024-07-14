@@ -4,32 +4,40 @@ import os
 import django
 from django.utils import timezone
 from faker import Faker
-from therapist_chat.settings import *  # Adjust this import based on your actual settings module
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "therapist_chat.settings")
 django.setup()
 
 # Now you can import your models and start using Django ORM
-from chat.models import Conversation, Message
+from chat.models import Conversation, Message, UserProfile
 from django.contrib.auth.models import User
 
 # Initialize Faker generator
 fake = Faker()
 
 # Define functions to create sample data
-def create_users():
-    therapist_username = fake.user_name()  # Generates a unique username
-    parent_username = fake.user_name()  # Generates another unique username
+def create_users(num_therapists, num_parents):
+    therapists = []
+    parents = []
     
-    therapist = User.objects.create_user(username=therapist_username, password='password', email='therapist@example.com')
-    parent = User.objects.create_user(username=parent_username, password='password', email='parent@example.com')
+    for _ in range(num_therapists):
+        therapist_username = fake.user_name()
+        therapist = User.objects.create_user(username=therapist_username, password='password', email=f'{therapist_username}@example.com')
+        UserProfile.objects.create(user=therapist, role='therapist')
+        therapists.append(therapist)
     
-    return therapist, parent
+    for _ in range(num_parents):
+        parent_username = fake.user_name()
+        parent = User.objects.create_user(username=parent_username, password='password', email=f'{parent_username}@example.com')
+        UserProfile.objects.create(user=parent, role='parent')
+        parents.append(parent)
+    
+    return therapists, parents
 
 def create_conversations(therapist, parent):
-    conversation1 = Conversation.objects.create(therapist=therapist, parent=parent, status='active')
-    conversation2 = Conversation.objects.create(therapist=therapist, parent=parent, status='closed')
+    conversation1 = Conversation.objects.create(therapist=therapist, parent=parent, status=1)
+    conversation2 = Conversation.objects.create(therapist=therapist, parent=parent, status=4)
     return conversation1, conversation2
 
 def create_messages(conversation):
@@ -43,10 +51,16 @@ def create_messages(conversation):
         )
 
 def main():
-    therapist, parent = create_users()
-    conversation1, conversation2 = create_conversations(therapist, parent)
-    create_messages(conversation1)
-    create_messages(conversation2)
+    num_therapists = 4
+    num_parents = 4
+    
+    therapists, parents = create_users(num_therapists, num_parents)
+    
+    for therapist in therapists:
+        for parent in parents:
+            conversation1, conversation2 = create_conversations(therapist, parent)
+            create_messages(conversation1)
+            create_messages(conversation2)
 
     print("Sample data generated successfully.")
 
