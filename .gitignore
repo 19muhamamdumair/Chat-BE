@@ -1,2 +1,24 @@
+# Virtual Environment
 *venv
 *env
+
+# Database
+*.sqlite3
+*.db
+
+# Static files
+staticfiles/
+
+# Media files
+media/
+
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Local configuration
+.env
+local_settings.py
+
+# Logs and output files
+*.log
