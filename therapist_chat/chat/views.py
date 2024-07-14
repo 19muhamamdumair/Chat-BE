@@ -87,9 +87,19 @@ class ConversationViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_403_FORBIDDEN)
 
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
+    queryset = Message.objects.none()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        conversation_id = self.request.query_params.get('conversation_id')
+        print("conversation_id:>> ", conversation_id)
+        if conversation_id:
+            # queryset = Message.objects.all()
+            queryset = Message.objects.filter(conversation_id=conversation_id)
+        else:
+            queryset = Message.objects.none()
+        return queryset
 
     def perform_create(self, serializer):
         file = self.request.data.get('file')
@@ -97,6 +107,13 @@ class MessageViewSet(viewsets.ModelViewSet):
             serializer.save(file=file)
         else:
             serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        return Response({"message": "Message deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
