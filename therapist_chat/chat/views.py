@@ -185,6 +185,7 @@ def get_all_therapists(request):
     therapists = UserProfile.objects.filter(role='therapist')
     therapist_details = [
         {
+            'user_id': therapist.user.id,
             'username': therapist.user.username,
             'email': therapist.user.email,
             'first_name': therapist.user.first_name,
@@ -200,6 +201,7 @@ def get_all_parents(request):
     parents = UserProfile.objects.filter(role='parent')
     parent_details = [
         {
+            'user_id': parent.user.id,
             'username': parent.user.username,
             'email': parent.user.email,
             'first_name': parent.user.first_name,
