@@ -1,7 +1,7 @@
 # chat/views.py
 
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,7 +16,7 @@ import jwt
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    queryset = Conversation.objects.all()
+    queryset = Conversation.objects.none()
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'pk'
@@ -43,15 +43,30 @@ class ConversationViewSet(viewsets.ModelViewSet):
             decoded_access_token = jwt.decode(access_token, options={"verify_signature": False})
             user_id = decoded_access_token['user_id']
             
-            if 'parent' in serializer.validated_data:
-                serializer.save(parent_id=user_id)
-                print('Saved with parent_id:', user_id)
-            elif 'therapist' in serializer.validated_data:
-                serializer.save(therapist_id=user_id)
-                print('Saved with therapist_id:', user_id)
-            else:
-                return Response({"error": "You must specify either parent_id or therapist_id"},
+            therapist_id = serializer.validated_data.get('therapist_id')
+            parent_id = serializer.validated_data.get('parent_id')
+
+            if not therapist_id or not parent_id:
+                return Response({"error": "You must specify both parent_id and therapist_id"},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if a conversation already exists between this therapist and parent
+            existing_conversation = Conversation.objects.filter(
+                therapist_id=therapist_id,
+                parent_id=parent_id
+            ).first()
+
+            if existing_conversation:
+                if existing_conversation.status == 4:
+                    serializer.save()
+                    print('Creating new conversation because the old one has status 4')
+                else:
+                    return Response({"error": "Conversation already exists"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                serializer.save()
+                print('Creating new conversation as no existing conversation was found')
+
         except jwt.ExpiredSignatureError:
             return Response({"error": "Token is expired"}, status=status.HTTP_401_UNAUTHORIZED)
         except jwt.InvalidTokenError:
@@ -74,17 +89,38 @@ class ConversationViewSet(viewsets.ModelViewSet):
             return Response({"error": "You do not have permission to perform this action."},
                             status=status.HTTP_403_FORBIDDEN)
 
-    def perform_destroy(self, instance):
+    @action(detail=False, methods=['delete'], url_path='remove-duplicates')
+    def remove_duplicates(self, request):
         access_token = self.request.headers.get('Authorization').split()[1]  # Extracting the JWT token
-        decoded_access_token = jwt.decode(access_token, options={"verify_signature": False})
-        user_id = decoded_access_token['user_id']
+        try:
+            decoded_access_token = jwt.decode(access_token, options={"verify_signature": False})
+            user_id = decoded_access_token['user_id']
 
-        if instance.parent_id == user_id or instance.therapist_id == user_id:
-            instance.delete()
-            return Response({"message": "Conversation deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({"error": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
+            conversations = Conversation.objects.filter(Q(therapist_id=user_id) | Q(parent_id=user_id))
+
+            duplicate_count = 0
+
+            for therapist_id, parent_id, status in conversations.values_list('therapist_id', 'parent_id', 'status').distinct():
+                duplicates = Conversation.objects.filter(
+                    therapist_id=therapist_id,
+                    parent_id=parent_id,
+                    status=status
+                ).order_by('created_at')
+
+                if duplicates.count() > 1:
+                    for duplicate in duplicates[1:]:  # Skip the first conversation and delete the rest
+                        duplicate.delete()
+                        duplicate_count += 1
+
+            return Response({"message": f"Deleted {duplicate_count} duplicate conversations."})
+
+        except jwt.ExpiredSignatureError:
+            return Response({"error": "Token is expired"}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+        except KeyError:
+            return Response({"error": "Invalid token format"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.none()
@@ -93,20 +129,14 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         conversation_id = self.request.query_params.get('conversation_id')
-        print("conversation_id:>> ", conversation_id)
         if conversation_id:
-            # queryset = Message.objects.all()
             queryset = Message.objects.filter(conversation_id=conversation_id)
         else:
             queryset = Message.objects.none()
         return queryset
 
     def perform_create(self, serializer):
-        file = self.request.data.get('file')
-        if file:
-            serializer.save(file=file)
-        else:
-            serializer.save()
+        serializer.save()
 
     def perform_update(self, serializer):
         serializer.save()
@@ -114,7 +144,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         instance.delete()
         return Response({"message": "Message deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def sign_in(request):

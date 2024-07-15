@@ -23,6 +23,8 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = '__all__'
 
+    content = serializers.CharField(required=False, allow_blank=True)
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         if instance.file:
@@ -34,4 +36,10 @@ class MessageSerializer(serializers.ModelSerializer):
             rep['file'] = None
         print(f"Serialized File URL: {rep['file']}")
         return rep
-    
+
+    def validate(self, data):
+        content = data.get('content')
+        file = data.get('file')
+        if not content and not file:
+            raise serializers.ValidationError("You must provide either content or a file.")
+        return data

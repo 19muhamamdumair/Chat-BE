@@ -38,6 +38,6 @@ class Conversation(models.Model):
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     file = models.FileField(storage=MediaStorage(), upload_to='chat_files/', null=True, blank=True)
