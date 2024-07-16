@@ -132,7 +132,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'therapist_chat.routing.application'
+WSGI_APPLICATION = 'therapist_chat.routing.wsgi_application'
 
 
 # Database
