@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from chat import views
 from django.conf import settings
 from django.conf.urls.static import static
+from chat.consumers import TextRoomConsumer
 
 router = DefaultRouter()
 router.register(r'conversations', views.ConversationViewSet, basename='conversation')
@@ -18,6 +19,7 @@ urlpatterns = [
     path('api/change_conversation_status/', views.change_conversation_status, name='change_conversation_status'),
     path('api/get_all_therapists/', views.get_all_therapists, name='get_all_therapists'),
     path('api/get_all_parents/', views.get_all_parents, name='get_all_parents'),
+    re_path(r'^ws/chat/(?P<room_name>[^/]+)/$', TextRoomConsumer.as_asgi()),
 ]
 
 if settings.DEBUG:
