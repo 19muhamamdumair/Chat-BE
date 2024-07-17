@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/get_all_therapists/', views.get_all_therapists, name='get_all_therapists'),
     path('api/get_all_parents/', views.get_all_parents, name='get_all_parents'),
     re_path(r'^ws/chat/(?P<room_name>[^/]+)/$', TextRoomConsumer.as_asgi()),
+    path('api/message/', views.get_message_by_id, name='get_message_by_id'),
 ]
 
 if settings.DEBUG:

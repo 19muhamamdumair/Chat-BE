@@ -239,3 +239,17 @@ def get_all_parents(request):
         } for parent in parents
     ]
     return Response(parent_details)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_message_by_id(request):
+    message_id = request.query_params.get('message_id')
+    if not message_id:
+        return Response({"error": "Message ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        message = Message.objects.get(id=message_id)
+        serializer = MessageSerializer(message)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Message.DoesNotExist:
+        return Response({"error": "Message not found"}, status=status.HTTP_404_NOT_FOUND)

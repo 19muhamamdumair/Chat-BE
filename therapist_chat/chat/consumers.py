@@ -6,8 +6,12 @@ from channels.generic.websocket import WebsocketConsumer
 from chat.models import Message, Conversation, UserProfile
 from django.contrib.auth.models import User
 import logging
-
+import base64
 from django.db import transaction
+import os
+from datetime import datetime
+import io
+from django.core.files.base import ContentFile
 logger = logging.getLogger(__name__)
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):
@@ -31,14 +35,19 @@ class TextRoomConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json['conversation']
         content = text_data_json['content']
-        file = text_data_json.get('file')
+        file = text_data_json['file']
         sender_id = text_data_json['sender']
         file_name = text_data_json.get('fileName')  # Ensure correct key here
+        message_ID =text_data_json['message_ID']
 
-        # Save message to database
-        self.save_message_to_db(conversation_id, content, file, sender_id)
+        if file:
+            file_info=self.base64_to_file(file, file_name)
+            msg=self.save_message_to_db(conversation_id, content, file_info, sender_id)
+        else:
+            msg=self.save_message_to_db(conversation_id, content, file, sender_id)
 
-        # Send message back to room group
+
+
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
@@ -47,10 +56,22 @@ class TextRoomConsumer(WebsocketConsumer):
                 'content':content,
                 'file':file,
                 'sender': sender_id,
-                'fileName':file_name
+                'fileName':file_name,
+                'message_ID':msg.id
             }
         )
 
+    def base64_to_file(self,base64_string, file_name):
+        format, imgstr = base64_string.split(';base64,')
+        ext = format.split('/')[-1]
+        decoded_file = base64.b64decode(imgstr)
+        
+        # Create a file-like object
+        file_io = io.BytesIO(decoded_file)
+        file = ContentFile(file_io.read(), name=f"{file_name}.{ext}")
+        
+        return file
+    
     def save_message_to_db(self, conversation_id, content, file, sender_id):
         try:
             conversation = Conversation.objects.get(id=conversation_id)
@@ -63,7 +84,7 @@ class TextRoomConsumer(WebsocketConsumer):
                 sender=sender
             )
             message.save()
-            print(message)
+            return message
 
         except (Conversation.DoesNotExist, User.DoesNotExist) as e:
             print(f"Error saving message to database: {e}")
@@ -76,6 +97,7 @@ class TextRoomConsumer(WebsocketConsumer):
         file = event['file']
         sender = event['sender']
         file_name = event['fileName']
+        message_ID=event['message_ID']
         
         # Send message to WebSocket
         self.send(text_data=json.dumps({
@@ -83,7 +105,8 @@ class TextRoomConsumer(WebsocketConsumer):
             'content': content,
             'file': file,
             'sender': sender,
-            'fileName': file_name
+            'fileName': file_name,
+            'message_ID':message_ID
         }))
     
     
