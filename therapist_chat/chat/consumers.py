@@ -1,7 +1,14 @@
+# consumers.py
+
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from chat.models import Message, Conversation, UserProfile
+from django.contrib.auth.models import User
+import logging
 
+from django.db import transaction
+logger = logging.getLogger(__name__)
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -12,6 +19,7 @@ class TextRoomConsumer(WebsocketConsumer):
             self.channel_name
         )
         self.accept()
+
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
@@ -20,45 +28,62 @@ class TextRoomConsumer(WebsocketConsumer):
         )
 
     def receive(self, text_data):
-        # print(text_data)
-        # Receive message from WebSocket
         text_data_json = json.loads(text_data)
-        conversation=text_data_json['conversation']
-        content=text_data_json['content']
-        file=text_data_json['file']
-        sender = text_data_json['sender']
-        fileName =text_data_json['fileName']
+        conversation_id = text_data_json['conversation']
+        content = text_data_json['content']
+        file = text_data_json.get('file')
+        sender_id = text_data_json['sender']
+        file_name = text_data_json.get('fileName')  # Ensure correct key here
 
-        print("receive")
-        # print(conversation,content,file,sender)
-        # Send message to room group
+        # Save message to database
+        self.save_message_to_db(conversation_id, content, file, sender_id)
+
+        # Send message back to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'conversation':conversation,
+                'conversation':conversation_id,
                 'content':content,
                 'file':file,
-                'sender': sender,
-                'fileName':fileName
+                'sender': sender_id,
+                'fileName':file_name
             }
         )
 
-    def chat_message(self, event):
-        print("chat_message")
-        # print(event)
+    def save_message_to_db(self, conversation_id, content, file, sender_id):
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+            sender = User.objects.get(id=sender_id)
 
+            message = Message(
+                conversation=conversation,
+                content=content,
+                file=file,
+                sender=sender
+            )
+            message.save()
+            print(message)
+
+        except (Conversation.DoesNotExist, User.DoesNotExist) as e:
+            print(f"Error saving message to database: {e}")
+            raise  # Optionally handle or log the error
+
+    def chat_message(self, event):
         # Receive message from room group
-        conversation=event['conversation']
-        content=event['content']
-        file=event['file']
+        conversation = event['conversation']
+        content = event['content']
+        file = event['file']
         sender = event['sender']
-        fileName =event['fileName']
+        file_name = event['fileName']
+        
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-            'conversation':conversation,
-                'content':content,
-                'file':file,
-                'sender': sender,
-                'fileName':fileName
+            'conversation': conversation,
+            'content': content,
+            'file': file,
+            'sender': sender,
+            'fileName': file_name
         }))
+    
+    

@@ -14,6 +14,21 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER', 'postgres.kuouxptesxeklwdavkdy'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'eTpRseb4zc4uNZvu'),
+        'HOST': os.getenv('DB_HOST', 'aws-0-eu-west-1.pooler.supabase.com'),  # e.g., 'your-db-host.rds.amazonaws.com'
+        'PORT': os.getenv('DB_PORT', '6543'),  # e.g., '5432'
+    }
+}
+
 
 # Set the token lifetimes
 SIMPLE_JWT = {
@@ -22,7 +37,7 @@ SIMPLE_JWT = {
 }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -34,7 +49,7 @@ SECRET_KEY = 'django-insecure-i371l*@*!un=g%o56w$p%%d3^g&b^cx-ahblzbl*%1(ph=$(qe
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.60.35.232']
+ALLOWED_HOSTS = ['13.60.35.232','127.0.0.1']
 
 # settings.py
 
@@ -138,12 +153,7 @@ WSGI_APPLICATION = 'therapist_chat.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+
 
 
 # Password validation
