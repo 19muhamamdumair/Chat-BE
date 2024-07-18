@@ -3,16 +3,17 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from chat.models import Message, Conversation, UserProfile
+from chat.models import Message, Conversation
 from django.contrib.auth.models import User
 import logging
 import base64
-from django.db import transaction
-import os
-from datetime import datetime
 import io
 from django.core.files.base import ContentFile
 logger = logging.getLogger(__name__)
+import os
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
