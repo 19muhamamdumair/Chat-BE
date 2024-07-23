@@ -3,6 +3,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from storages.backends.s3boto3 import S3Boto3Storage
+import os
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 class UserProfile(models.Model):
     USER_ROLES = (
