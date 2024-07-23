@@ -7,6 +7,8 @@ from chat import views
 from django.conf import settings
 from django.conf.urls.static import static
 from chat.consumers import TextRoomConsumer
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 router = DefaultRouter()
 router.register(r'conversations', views.ConversationViewSet, basename='conversation')
