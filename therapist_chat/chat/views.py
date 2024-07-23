@@ -14,6 +14,8 @@ from django.db.models import Q
 from rest_framework_simplejwt.backends import TokenBackend
 import jwt
 
+from rest_framework.response import Response
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.none()
@@ -244,6 +246,7 @@ def get_all_parents(request):
 @permission_classes([IsAuthenticated])
 def get_message_by_id(request):
     message_id = request.query_params.get('message_id')
+    print("message id:",message_id)
     if not message_id:
         return Response({"error": "Message ID is required"}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -253,3 +256,18 @@ def get_message_by_id(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Message.DoesNotExist:
         return Response({"error": "Message not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    refresh_token = request.data.get('refresh_token')
+    if refresh_token is None:
+        return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refresh = RefreshToken(refresh_token)
+        new_access_token = str(refresh.access_token)
+        return Response({'access_token': new_access_token}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

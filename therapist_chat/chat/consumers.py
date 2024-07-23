@@ -55,7 +55,7 @@ class TextRoomConsumer(WebsocketConsumer):
                 'type': 'chat_message',
                 'conversation':conversation_id,
                 'content':content,
-                'file':file,
+                'file':msg.file,
                 'sender': sender_id,
                 'fileName':file_name,
                 'message_ID':msg.id
