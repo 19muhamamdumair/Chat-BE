@@ -8,7 +8,7 @@ channels-redis==4.2.0
 charset-normalizer==3.3.2
 cryptography==42.0.8
 distlib==0.3.8
-Django==5.0.7
+django==4.2.14
 django-channels==0.7.0
 django-cors-headers==4.4.0
 django-extensions==3.2.3
@@ -26,7 +26,6 @@ packaging==24.1
 platformdirs==3.10.0
 pyclean==3.0.0
 pycparser==2.22
-PyJWT==2.8.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.0
 redis==5.0.7
