@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/get_all_parents/', views.get_all_parents, name='get_all_parents'),
     re_path(r'^ws/chat/(?P<room_name>[^/]+)/$', TextRoomConsumer.as_asgi()),
     path('api/message/', views.get_message_by_id, name='get_message_by_id'),
-    path('api/refresh_token/', views.refresh_token, name='refresh_token'),
+    # path('api/refresh_token/', views.refresh_token, name='refresh_token'),
 ]
 
 if settings.DEBUG:
