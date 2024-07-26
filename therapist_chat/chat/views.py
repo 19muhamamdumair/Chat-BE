@@ -16,7 +16,7 @@ import jwt
 import os
 # from rest_framework.response import Response
 
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
