@@ -3,8 +3,9 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
 from chat.consumers import TextRoomConsumer
 import os
+import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
-
+django.setup()
 websocket_urlpatterns = [
     re_path(r'^ws/chat/(?P<room_name>[^/]+)/$', TextRoomConsumer.as_asgi()),
 ]
