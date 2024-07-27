@@ -1,11 +1,10 @@
-import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 from channels.routing import ProtocolTypeRouter, URLRouter
 # import app.routing
 from django.urls import re_path
 from chat.consumers import TextRoomConsumer
-import django
-django.setup()
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+
 websocket_urlpatterns = [
     re_path(r'^ws/chat/(?P<room_name>[^/]+)/$', TextRoomConsumer.as_asgi()),
 ]

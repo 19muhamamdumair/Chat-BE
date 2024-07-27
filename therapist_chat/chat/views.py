@@ -1,6 +1,4 @@
 # chat/views.py
-import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes, action
@@ -15,6 +13,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Q
 # from rest_framework_simplejwt.backends import TokenBackend
 import jwt
+import os
+# from rest_framework.response import Response
+
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 
 class ConversationViewSet(viewsets.ModelViewSet):

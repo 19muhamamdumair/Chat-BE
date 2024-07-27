@@ -1,7 +1,4 @@
 # chat/serializers.py
-import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
-
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Conversation, Message
