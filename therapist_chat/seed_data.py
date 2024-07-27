@@ -7,7 +7,7 @@ from faker import Faker
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "therapist_chat.settings")
-django.setup()
+# django.setup()
 
 # Now you can import your models and start using Django ORM
 from chat.models import Conversation, Message, UserProfile
