@@ -35,13 +35,12 @@ class TextRoomConsumer(WebsocketConsumer):
         )
 
     def receive(self, text_data):
-        print(text_data)
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json['conversation']
         content = text_data_json['content']
         file = text_data_json['file']
         sender_id = text_data_json['sender']
-        file_name = text_data_json.get('fileName')  # Ensure correct key here
+        file_name = text_data_json['fileName']  # Ensure correct key here
         message_ID =text_data_json['message_ID']
 
         if file:
@@ -65,16 +64,21 @@ class TextRoomConsumer(WebsocketConsumer):
             }
         )
 
-    def base64_to_file(self,base64_string, file_name):
+    def base64_to_file(self, base64_string, file_name):  
         format, imgstr = base64_string.split(';base64,')
         ext = format.split('/')[-1]
+        
+        if not file_name.lower().endswith(f".{ext}"):
+            file_name = f"{file_name}.{ext}"
+        
         decoded_file = base64.b64decode(imgstr)
         
         # Create a file-like object
         file_io = io.BytesIO(decoded_file)
-        file = ContentFile(file_io.read(), name=f"{file_name}.{ext}")
-        
+        file = ContentFile(file_io.read(), name=file_name)
+
         return file
+
     
     def save_message_to_db(self, conversation_id, content, file, sender_id):
         try:
@@ -95,7 +99,6 @@ class TextRoomConsumer(WebsocketConsumer):
             raise  # Optionally handle or log the error
 
     def chat_message(self, event):
-        print(event)
         # Receive message from room group
         conversation = event['conversation']
         content = event['content']
