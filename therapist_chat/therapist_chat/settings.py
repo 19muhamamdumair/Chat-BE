@@ -104,9 +104,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'channels',
-    'chat',
     'storages',
-    'django_extensions',
     'corsheaders',
 ]
 
