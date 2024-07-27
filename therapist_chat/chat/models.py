@@ -13,6 +13,8 @@ class UserProfile(models.Model):
         ('therapist', 'Therapist'),
         ('parent', 'Parent'),
     )
+    class Meta:
+        app_label = 'chat'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=USER_ROLES)
