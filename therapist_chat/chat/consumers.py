@@ -11,6 +11,8 @@ import io
 from django.core.files.base import ContentFile
 logger = logging.getLogger(__name__)
 import os
+from django.db.models.fields.files import FieldFile
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
@@ -33,6 +35,7 @@ class TextRoomConsumer(WebsocketConsumer):
         )
 
     def receive(self, text_data):
+        print(text_data)
         text_data_json = json.loads(text_data)
         conversation_id = text_data_json['conversation']
         content = text_data_json['content']
@@ -92,6 +95,7 @@ class TextRoomConsumer(WebsocketConsumer):
             raise  # Optionally handle or log the error
 
     def chat_message(self, event):
+        print(event)
         # Receive message from room group
         conversation = event['conversation']
         content = event['content']
@@ -99,12 +103,20 @@ class TextRoomConsumer(WebsocketConsumer):
         sender = event['sender']
         file_name = event['fileName']
         message_ID=event['message_ID']
+
+        if isinstance(event['file'], FieldFile):
+            if event['file']:
+                event['file'] = event['file'].url  # Convert to URL
+            else:
+                event['file'] = None  # Handle None values
+
+
         
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'conversation': conversation,
             'content': content,
-            'file': file,
+            'file': event['file'],
             'sender': sender,
             'fileName': file_name,
             'message_ID':message_ID
