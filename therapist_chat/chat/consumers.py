@@ -1,5 +1,6 @@
 # consumers.py
-
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
@@ -10,9 +11,6 @@ import base64
 import io
 from django.core.files.base import ContentFile
 logger = logging.getLogger(__name__)
-import os
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):

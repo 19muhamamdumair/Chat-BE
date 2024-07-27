@@ -1,5 +1,6 @@
 # chat/apps.py
-
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 from django.apps import AppConfig
 
 
