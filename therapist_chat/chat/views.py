@@ -10,11 +10,11 @@ from django.contrib.auth.models import User
 from .models import Conversation, Message, UserProfile
 from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 from django.db.models import Q
 # from rest_framework_simplejwt.backends import TokenBackend
 import jwt
 import os
-# from rest_framework.response import Response
 
 # os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
@@ -260,16 +260,30 @@ def get_message_by_id(request):
         return Response({"error": "Message not found"}, status=status.HTTP_404_NOT_FOUND)
     
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def refresh_token(request):
-#     refresh_token = request.data.get('refresh_token')
-#     if refresh_token is None:
-#         return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    refresh_token = request.data.get('refresh_token')
+    if refresh_token is None:
+        return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-#     try:
-#         refresh = RefreshToken(refresh_token)
-#         new_access_token = str(refresh.access_token)
-#         return Response({'access_token': new_access_token}, status=status.HTTP_200_OK)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        refresh = RefreshToken(refresh_token)
+        new_access_token = str(refresh.access_token)
+        return Response({'access_token': new_access_token}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_messages(request, conversation_id):
+    try:
+        conversation = Conversation.objects.get(id=conversation_id)
+    except Conversation.DoesNotExist:
+        return Response({"error": "Conversation not found"}, status=404)
+
+    # Delete all messages associated with the conversation
+    messages_deleted, _ = Message.objects.filter(conversation=conversation).delete()
+
+    return Response({"status": "success", "messages_deleted": messages_deleted})
