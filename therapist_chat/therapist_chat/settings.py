@@ -28,12 +28,13 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '6543'),  # e.g., '5432'
     }
 }
+CHANNELS_WS_TIMEOUT = 30
 
 
 # Set the token lifetimes
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=365),
 }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
