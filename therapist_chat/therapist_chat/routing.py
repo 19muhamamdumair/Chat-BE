@@ -6,7 +6,7 @@ import os
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
-# django.setup()
+django.setup()
 
 
 websocket_urlpatterns = [
