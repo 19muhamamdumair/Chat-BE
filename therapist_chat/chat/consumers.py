@@ -2,7 +2,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from chat.models import Message, Conversation
-# from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 import logging
 import base64
 import io
@@ -12,7 +12,7 @@ import os
 from django.db.models.fields.files import FieldFile
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 
 class TextRoomConsumer(WebsocketConsumer):
     def connect(self):
@@ -99,20 +99,20 @@ class TextRoomConsumer(WebsocketConsumer):
         return file
 
     def save_message_to_db(self, conversation_id, content, file, sender_id):
-        # try:
-            # conversation = Conversation.objects.get(id=conversation_id)
-            # sender = User.objects.get(id=sender_id)
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+            sender = User.objects.get(id=sender_id)
             message = Message(
-                conversation=conversation_id,
+                conversation=conversation,
                 content=content,
                 file=file,
-                sender=sender_id
+                sender=sender
             )
             message.save()
             return message
-        # except (Conversation.DoesNotExist, User.DoesNotExist) as e:
-        #     print(f"Error saving message to database: {e}")
-        #     raise
+        except (Conversation.DoesNotExist, User.DoesNotExist) as e:
+            print(f"Error saving message to database: {e}")
+            raise
 
     def chat_message(self, event):
         conversation = event['conversation']
