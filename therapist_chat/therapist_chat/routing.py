@@ -1,12 +1,15 @@
-from channels.routing import ProtocolTypeRouter, URLRouter
-# import app.routing
-from django.urls import re_path
-from chat.consumers import TextRoomConsumer
 import os
 import django
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 django.setup()
+from channels.routing import ProtocolTypeRouter, URLRouter
+# import app.routing
+
+from django.urls import re_path
+from chat.consumers import TextRoomConsumer
+
+
+
 
 
 websocket_urlpatterns = [
