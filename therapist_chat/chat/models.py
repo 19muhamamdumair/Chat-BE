@@ -1,7 +1,7 @@
 # chat/models.py
 import os
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
 # django.setup()
 from django.db import models
 from django.contrib.auth.models import User
