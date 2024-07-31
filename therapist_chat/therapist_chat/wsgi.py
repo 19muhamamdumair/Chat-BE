@@ -10,8 +10,10 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
 
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+import django
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapist_chat.settings')
+django.setup()
 
 from django.core.wsgi import get_wsgi_application
 
